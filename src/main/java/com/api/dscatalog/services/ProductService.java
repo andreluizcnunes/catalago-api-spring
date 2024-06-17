@@ -9,7 +9,6 @@ import com.api.dscatalog.repositories.ProductRepository;
 import com.api.dscatalog.services.exceptions.DatabaseException;
 import com.api.dscatalog.services.exceptions.ResourceNotFoundException;
 import jakarta.persistence.EntityNotFoundException;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -24,22 +23,25 @@ import java.util.stream.Collectors;
 @Service
 public class ProductService {
 
-    @Autowired
-    private ProductRepository productRepository;
+    private final ProductRepository productRepository;
 
-    @Autowired
-    private CategoryRepository categoryRepository;
+    private final CategoryRepository categoryRepository;
+
+    public ProductService(ProductRepository productRepository, CategoryRepository categoryRepository) {
+        this.productRepository = productRepository;
+        this.categoryRepository = categoryRepository;
+    }
 
     @Transactional(readOnly = true)
     public List<ProductDTO> getAllProducts() {
         List<Product> result = productRepository.findAll();
-        return result.stream().map(x -> new ProductDTO(x)).collect(Collectors.toList());
+        return result.stream().map(ProductDTO::new).collect(Collectors.toList());
     }
 
     @Transactional(readOnly = true)
     public Page<ProductDTO> getAllProductsPaged(PageRequest pageRequest) {
         Page<Product> result = productRepository.findAll(pageRequest);
-        return result.map(x -> new ProductDTO(x));
+        return result.map(ProductDTO::new);
     }
 
     @Transactional(readOnly = true)
